@@ -6,8 +6,9 @@ A comunicação entre o Raspberry Pi e a placa ocorre através de uma interface 
 
 Visão Geral da Placa
 
-![PCB 3D](https://raw.githubusercontent.com/pkaislan123/Raspberr-PI-IEC/refs/heads/main/PCB_3D.png)
-![PCB 3D](./PCB_3D.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pkaislan123/Raspberr-PI-IEC/refs/heads/main/PCB_3D.png" width="700">
+</p>
 
 
 A placa foi projetada para aplicações que exigem confiabilidade operacional, modularidade e integração entre computação embarcada e controle eletrônico de baixo nível. Seu objetivo é desacoplar o processamento supervisório do acionamento físico de sensores e cargas, criando uma arquitetura mais robusta e escalável.
