@@ -272,3 +272,14 @@ Reutilização do hardware
 Expansibilidade do sistema
 
 O resultado é uma plataforma híbrida capaz de unir o poder computacional do Raspberry Pi com a confiabilidade de um microcontrolador dedicado ao controle embarcado.
+
+
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pkaislan123/Raspberr-PI-IEC/refs/heads/main/PCB-Fabricada.jfif" width="700">
+</p>
+
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pkaislan123/Raspberr-PI-IEC/refs/heads/main/PCB-Fabricada-2.jfif" width="700">
+</p>
