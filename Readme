@@ -1,0 +1,254 @@
+Raspberry Pi IECE — Interface Expandida de Controle Eletrônico
+
+O Raspberry Pi IECE (Interface Expandida de Controle Eletrônico) é uma placa de expansão desenvolvida para aplicações embarcadas, automação e sistemas IoT, projetada para atuar como interface de hardware entre um computador embarcado da família Raspberry Pi e dispositivos de campo, sensores e cargas externas.
+
+A arquitetura da placa foi concebida com foco em separação funcional entre processamento de alto nível e controle de hardware em tempo real. Nesse modelo, o Raspberry Pi é responsável pela interface gráfica, processamento de dados, conectividade em rede, banco de dados e comunicação com serviços externos, enquanto um microcontrolador ATmega328PB executa o controle direto das entradas, saídas e periféricos eletrônicos.
+
+A comunicação entre o Raspberry Pi e a placa ocorre através de uma interface serial UART de 4 vias, composta por alimentação 5V, GND, RX e TX. Essa abordagem permite utilizar diferentes modelos de Raspberry Pi ou até outros computadores embarcados compatíveis, mantendo o microcontrolador dedicado ao gerenciamento do hardware de controle.
+
+A placa foi projetada para aplicações que exigem confiabilidade operacional, isolamento entre processamento e acionamento de cargas, modularidade e facilidade de integração com sistemas supervisórios e plataformas IoT.
+
+Arquitetura do Sistema
+
+A estrutura eletrônica da placa é dividida em dois blocos principais:
+
+Processamento de Alto Nível
+
+Executado externamente por um Raspberry Pi conectado via UART, responsável por:
+
+Interface gráfica local ou remota
+Sistemas web e dashboards
+Comunicação em rede
+Serviços em nuvem
+Registro e armazenamento de dados
+Lógica supervisória
+APIs e integração IoT
+Controle Embarcado
+
+Executado pelo microcontrolador ATmega328PB presente na placa, responsável por:
+
+Acionamento de cargas
+Leitura de sensores
+Processamento em tempo real
+Controle PWM
+Monitoramento de entradas
+Comunicação serial com o Raspberry Pi
+Operação autônoma do hardware
+
+Essa divisão reduz a carga de processamento sobre o Raspberry Pi em tarefas críticas de temporização e controle físico, aumentando a estabilidade do sistema em aplicações industriais e embarcadas.
+
+Alimentação e Conversão de Energia
+
+A placa possui entrada de alimentação ampla de 7VDC até 40VDC, permitindo integração com diferentes fontes industriais, automotivas e sistemas de alimentação embarcados.
+
+O circuito de entrada inclui:
+
+Diodo de proteção contra inversão de polaridade
+Filtragem capacitiva
+Conversores buck baseados no LM2596S-5.0
+Estágio de desacoplamento para estabilidade do sistema
+
+Foram implementados dois reguladores independentes:
+
+Regulador para Raspberry Pi
+
+Responsável pela alimentação dedicada do computador embarcado através da linha +5V_RASP.
+
+Regulador para Circuito Lógico
+
+Responsável pela alimentação do ATmega328PB, sensores e circuitos auxiliares através da linha +5V_CIRCUIT.
+
+A separação das linhas de alimentação reduz interferências elétricas causadas pelo chaveamento de cargas e melhora a estabilidade do sistema como um todo.
+
+Microcontrolador Principal
+
+O núcleo de controle da placa é baseado no microcontrolador ATmega328PB-AU operando com cristal externo de 16 MHz.
+
+O circuito inclui:
+
+Cristal de clock de 16 MHz
+Capacitores de estabilização
+Circuito de reset físico
+Capacitores de desacoplamento próximos ao VCC e GND
+Header ISP para gravação do firmware
+
+O ATmega328PB foi escolhido devido à sua robustez, ampla disponibilidade de bibliotecas, estabilidade operacional e facilidade de integração com ecossistemas Arduino e sistemas embarcados em C/C++.
+
+Comunicação Serial
+
+A comunicação principal entre a placa e o Raspberry Pi ocorre via UART serial.
+
+A interface exposta no conector inclui:
+
++5V
+GND
+RX
+TX
+
+Esse barramento é utilizado para:
+
+Envio de comandos
+Telemetria
+Leitura de sensores
+Controle de saídas
+Sincronização entre interface gráfica e hardware
+
+Essa arquitetura permite que o Raspberry Pi funcione como camada supervisória enquanto o ATmega328PB executa as rotinas críticas de hardware.
+
+Entradas para Sensores
+
+A placa possui interfaces dedicadas para sensores e dispositivos externos, permitindo aplicações de monitoramento e automação.
+
+Entre as entradas disponíveis estão:
+
+Sensor de Fluxo
+
+Entrada dedicada para sensores de fluxo de líquidos.
+
+Aplicações:
+
+Monitoramento hidráulico
+Medição de consumo
+Controle de bombas
+Sistemas de irrigação
+Sensor Ultrassônico
+
+Interface TRIG/ECHO para sensores ultrassônicos de distância e nível.
+
+Aplicações:
+
+Medição de nível de reservatórios
+Detecção de presença
+Controle de enchimento
+Automação industrial
+Sensor de Temperatura
+
+Entrada dedicada para sensores térmicos.
+
+Aplicações:
+
+Monitoramento ambiental
+Controle térmico
+Refrigeração
+Estufas
+Processos industriais
+Controle de Cargas
+
+A placa possui múltiplos canais de acionamento utilizando MOSFETs IRLZ44N, permitindo controle de cargas DC de média e alta corrente.
+
+Os canais foram divididos entre:
+
+Saídas PWM
+
+Saídas com acionamento PWM utilizando drivers ópticos FOD3182SD para maior robustez elétrica.
+
+Aplicações:
+
+Controle de velocidade de motores
+Controle de brilho
+Controle proporcional
+Fontes chaveadas
+Atuadores PWM
+Saídas Digitais
+
+Saídas para acionamento ON/OFF de cargas DC.
+
+Aplicações:
+
+Relés
+Solenoides
+Bombas
+Ventiladores
+Iluminação
+Válvulas
+
+Cada canal possui:
+
+MOSFET de potência
+Resistor de gate
+Pull-down no gate
+Diodo de flyback para proteção contra cargas indutivas
+Bornes dedicados para conexão externa
+
+A utilização do IRLZ44N permite acionamento eficiente diretamente a partir de lógica de 5V.
+
+Proteções e Robustez Elétrica
+
+A placa incorpora diversos elementos de proteção e estabilidade elétrica:
+
+Proteção contra inversão de polaridade
+Diodos de flyback em cargas indutivas
+Filtragem capacitiva de entrada
+Capacitores de desacoplamento distribuídos
+Separação de alimentação lógica e potência
+Estabilização dedicada para o Raspberry Pi
+Pull-downs nos gates dos MOSFETs
+Controle isolado em canais PWM através de optodrivers
+
+Esses recursos tornam a placa adequada para ambientes sujeitos a ruído elétrico e chaveamento de cargas.
+
+Programação e Firmware
+
+O firmware do ATmega328PB pode ser desenvolvido em:
+
+C
+C++
+Framework Arduino AVR
+AVR-GCC
+
+A programação pode ser realizada através do header ISP presente na placa.
+
+O sistema pode operar de forma:
+
+Totalmente autônoma
+Integrada ao Raspberry Pi
+Integrada a sistemas SCADA
+Integrada a APIs e plataformas IoT
+Possibilidades de Aplicação
+
+O Raspberry Pi IECE pode ser utilizado em diferentes cenários de automação, monitoramento e controle embarcado.
+
+Automação Industrial
+Controle de máquinas
+Supervisão de processos
+Monitoramento de sensores
+Acionamento de atuadores
+Interfaces SCADA
+IoT Industrial
+Gateways IoT
+Telemetria remota
+Aquisição de dados
+Monitoramento em nuvem
+Controle remoto
+Automação Residencial
+Controle de iluminação
+Automação hidráulica
+Controle de bombas
+Monitoramento ambiental
+Sistemas Agrícolas
+Irrigação automatizada
+Controle de reservatórios
+Monitoramento de fluxo
+Sensoriamento ambiental
+Sistemas Embarcados Customizados
+Interfaces homem-máquina
+Equipamentos dedicados
+Produtos eletrônicos customizados
+Controladores industriais
+Filosofia do Projeto
+
+O Raspberry Pi IECE foi desenvolvido com a proposta de separar claramente:
+
+Interface e processamento de alto nível
+Controle físico em tempo real
+
+Essa arquitetura melhora:
+
+Estabilidade operacional
+Escalabilidade
+Modularidade
+Facilidade de manutenção
+Reutilização do hardware
+Expansibilidade do sistema
+
+O resultado é uma plataforma híbrida capaz de unir o poder computacional do Raspberry Pi com a confiabilidade de um microcontrolador dedicado ao controle embarcado.
