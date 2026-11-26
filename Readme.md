@@ -24,19 +24,55 @@ A arquitetura desacopla a camada supervisória — executada por um **Raspberry 
 
 ## Sumário
 
-1. [Visão Geral e Especificações Técnicas](#visão-geral-e-especificações-técnicas)
-2. [Arquitetura do Sistema](#arquitetura-do-sistema)
-3. [Subsistema de Alimentação e Integridade Elétrica](#subsistema-de-alimentação-e-integridade-elétrica)
-4. [Núcleo de Controle e Interface com Raspberry Pi](#núcleo-de-controle-e-interface-com-raspberry-pi)
-5. [Estágio de Potência e Entradas de Telemetria](#estágio-de-potência-e-entradas-de-telemetria)
-6. [Projeto de PCB e Critérios de Layout](#projeto-de-pcb-e-critérios-de-layout)
-7. [Validação em Bancada e Documentação de Hardware](#validação-em-bancada-e-documentação-de-hardware)
-8. [Firmware e Cenários de Aplicação](#firmware-e-cenários-de-aplicação)
-9. [Estrutura do Repositório](#estrutura-do-repositório)
+1. [Objetivo](#objetivo)
+2. [Justificativa Técnica](#justificativa-técnica)
+3. [Cenários de Uso](#cenários-de-uso)
+4. [Especificações Técnicas](#especificações-técnicas)
+5. [Arquitetura do Sistema](#arquitetura-do-sistema)
+6. [Subsistema de Alimentação e Integridade Elétrica](#subsistema-de-alimentação-e-integridade-elétrica)
+7. [Núcleo de Controle e Interface com Raspberry Pi](#núcleo-de-controle-e-interface-com-raspberry-pi)
+8. [Estágio de Potência e Entradas de Telemetria](#estágio-de-potência-e-entradas-de-telemetria)
+9. [Projeto de PCB e Critérios de Layout](#projeto-de-pcb-e-critérios-de-layout)
+10. [Validação em Bancada e Documentação de Hardware](#validação-em-bancada-e-documentação-de-hardware)
+11. [Firmware e Operação](#firmware-e-operação)
+12. [Estrutura do Repositório](#estrutura-do-repositório)
+13. [Stack Técnica e Tecnologias Utilizadas](#stack-técnica-e-tecnologias-utilizadas)
 
 ---
 
-## Visão Geral e Especificações Técnicas
+## Objetivo
+
+O objetivo do **Raspberry Pi IECE** é fornecer uma **placa-base de expansão eletrônica robusta e modular** que transforme um Raspberry Pi em um controlador pronto para campo — integrando em um único hardware regulação de potência industrial (`7–40 VDC`), condicionamento de sensores de processo, adaptação de nível lógico e acionamento direto de até 8 cargas DC.
+
+Com essa plataforma, o desenvolvedor concentra no Raspberry Pi toda a camada de interface gráfica (IHM), conectividade e regras de negócio, delegando a um coprocessador **ATmega328PB-AU** o controle físico determinístico de atuadores, PWM e telemetria.
+
+---
+
+## Justificativa Técnica
+
+Em projetos comerciais e industriais que utilizam Raspberry Pi diretamente conectado a módulos externos soltos, surgem problemas recorrentes de confiabilidade: jitter do sistema operacional Linux em rotinas de temporização/contagem de pulsos, risco elétrico nos GPIOs de `3,3 V` não tolerantes a `5 V`, resets aleatórios causados por picos de corrente compartilhados com cargas indutivas e fragilidade mecânica de chicotes improvisados.
+
+A arquitetura do IECE elimina esses pontos de falha na raiz:
+
+- **Separação entre Supervisão e Tempo Real:** o `ATmega328PB-AU` mantém a operação física previsível e contínua mesmo sob alta carga de CPU, atualização de tela HDMI ou travamento eventual do sistema operacional no Raspberry Pi.
+- **Alimentação Independente e Filtrada:** dois reguladores buck `LM2596S-5.0` separam o barramento do SBC (`+5V_RASP`, reforçado com capacitor bulk de `2200 µF`) do barramento de medição e controle (`+5V_CIRCUIT`), preservando a estabilidade de sensores durante picos de boot e chaveamento de cargas.
+- **Proteção Elétrica Completa de Campo:** entrada protegida contra inversão de polaridade (`1N5825`), adaptação de nível lógico UART (`1 kΩ / 2 kΩ`), pull-downs de gate de `10 kΩ` garantindo estado seguro no reset, diodos Schottky de flyback (`1N5822`) em todas as saídas e isolamento óptico (`FOD3182SD`) nos canais PWM.
+- **Integração Mecânica Limpa:** a furação `58 mm × 49 mm` acopla o Raspberry Pi diretamente sobre a PCB, reduzindo cabeamento e suscetibilidade a ruído eletromagnético.
+
+---
+
+## Cenários de Uso
+
+| Domínio | Aplicação Prática | Recursos do IECE Explorados |
+| :--- | :--- | :--- |
+| **Automação de Processos e Dosagem** | Máquinas dosadoras de líquidos com tela touchscreen HDMI, válvulas solenoides e controle volumétrico preciso. | Sensor de fluxo em `INT0`, 6 canais ON/OFF para válvulas, 2 canais PWM optoisolados para bombas e sensor de temperatura `J18`. |
+| **Automação Industrial e SCADA** | Controladores dedicados de máquinas, interfaces homem-máquina (IHM) locais e acionamento direto de atuadores DC até `40 V`. | Alimentação `7–40 VDC`, desacoplamento potência/lógica, flyback `1N5822` e comunicação UART estruturada. |
+| **IoT Industrial e Telemetria** | Gateways de aquisição em campo com pré-processamento determinístico no AVR e publicação em nuvem/APIs pelo Raspberry Pi. | 4 barramentos dedicados de telemetria (`+5V_CIRCUIT` isolado) + conectividade de rede no SBC. |
+| **Sistemas Hidráulicos e Agrícolas** | Controle automatizado de reservatórios, irrigação e acionamento protegido de bombas e solenoides. | Entrada ultrassônica (`TRIG/ECHO`), entrada dedicada de nível (`ADC7`), fluxo (`INT0`) e canais `IRLZ44N`. |
+
+---
+
+## Especificações Técnicas
 
 Em aplicações reais de campo, delegar acionamento de cargas indutivas, geração de PWM e contagem de pulsos diretamente a um Single-Board Computer (SBC) rodando Linux introduz riscos de jitter, instabilidade de alimentação e vulnerabilidade elétrica. O IECE resolve esse problema consolidando regulação de energia isolada, condicionamento de sinais, adaptação de nível lógico e estágio de potência em uma única placa-base com acoplamento mecânico direto para o Raspberry Pi.
 
@@ -205,24 +241,13 @@ O projeto percorreu o ciclo completo de engenharia de hardware — da concepçã
 
 ---
 
-## Firmware e Cenários de Aplicação
-
-### Desenvolvimento e Operação
+## Firmware e Operação
 
 O firmware embarcado no `ATmega328PB-AU` pode ser desenvolvido em **C/C++**, **AVR-GCC** ou **Framework Arduino AVR** (com suporte à variante `ATmega328PB`), gravado diretamente via header ISP (`J19`). A arquitetura suporta três modos de operação:
 
 1. **Integrado ao Raspberry Pi:** o SBC atua como IHM, gateway de rede e camada de negócios, enviando comandos e recebendo telemetria estruturada via UART.
 2. **Operação Autônoma:** o `ATmega328PB` executa malhas locais de controle (fluxo, nível, temperatura e acionamento de cargas) independentemente de um host ativo.
 3. **Integração SCADA / IoT:** compatível com exposição via APIs REST, MQTT ou protocolos industriais executados na camada do Raspberry Pi.
-
-### Domínios de Aplicação
-
-| Domínio | Casos de Uso |
-| :--- | :--- |
-| **Automação de Processos e Dosagem** | Controle volumétrico de líquidos por sensor de fluxo (`INT0`), acionamento de válvulas solenoides e bombas com modulação PWM e controle térmico. |
-| **Automação Industrial e SCADA** | Controladores dedicados de máquinas, interfaces homem-máquina (IHM) embarcadas, acionamento de atuadores DC até 40 V e supervisão local/remota. |
-| **IoT Industrial e Telemetria** | Gateways de aquisição de dados em campo com pré-processamento determinístico no MCU e envio em nuvem pelo Raspberry Pi. |
-| **Sistemas Hidráulicos e Agrícolas** | Monitoramento de reservatórios por ultrassom/nível, irrigação automatizada e gestão de bombas com proteção de cargas indutivas. |
 
 ---
 
@@ -236,6 +261,16 @@ O firmware embarcado no `ATmega328PB-AU` pode ser desenvolvido em **C/C++**, **A
 | [`PCB-Fabricada.jfif`](./PCB-Fabricada.jfif) | Registro fotográfico da PCB fabricada em teste com Raspberry Pi |
 | [`PCB-Fabricada-2.jfif`](./PCB-Fabricada-2.jfif) | Validação funcional integrada com IHM em display HDMI |
 | [`Readme.md`](./Readme.md) | Documentação técnica do projeto |
+
+---
+
+## Stack Técnica e Tecnologias Utilizadas
+
+| Categoria | Itens |
+| :--- | :--- |
+| **Hardware** | `Raspberry Pi` `ATmega328PB-AU` `LM2596S-5.0` `IRLZ44N` `FOD3182SD` `1N5825` `1N5822` `Cristal 16 MHz` `PCB Dupla Face` |
+| **Protocolos** | `UART (Serial)` `PWM` `ISP (ICSP)` `1-Wire` `ADC` `Interrupção Externa (INT0)` `Level Shifting 5V/3.3V` |
+| **Tecnologias** | `Engenharia de Hardware` `EasyEDA` `Eletrônica de Potência` `Optoisolamento` `C/C++` `AVR-GCC` `Arduino AVR` `Automação Industrial` `IHM / SCADA` `IoT` |
 
 ---
 
